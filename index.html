@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Mágica Ghibli</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            transition: all 0.5s ease;
+            overflow-x: hidden;
+        }
+
+        /* Temas */
+        .theme-feminine {
+            background: linear-gradient(135deg, #ffeef8 0%, #f0e6ff 50%, #e6f3ff 100%);
+        }
+
+        .theme-masculine {
+            background: linear-gradient(135deg, #e6f3ff 0%, #f0f8e6 50%, #fff8e6 100%);
+        }
+
+        .theme-forest {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 50%, #e6ffe6 100%);
+        }
+
+        /* Nubes flotantes */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
+            opacity: 0.6;
+            animation: float 20s infinite linear;
+        }
+
+        .cloud:before {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
+        }
+
+        .cloud1 {
+            width: 80px;
+            height: 30px;
+            top: 20%;
+            animation-delay: 0s;
+        }
+
+        .cloud1:before {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            left: 10px;
+        }
+
+        .cloud2 {
+            width: 60px;
+            height: 25px;
+            top: 60%;
+            animation-delay: -10s;
+        }
+
+        .cloud2:before {
+            width: 30px;
+            height: 30px;
+            top: -15px;
+            right: 15px;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        /* Pantalla de bienvenida */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.8s ease;
+        }
+
+        .welcome-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: welcomeFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes welcomeFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .welcome-input {
+            width: 100%;
+            padding: 1rem;
+            border: 3px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .welcome-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Contenedor principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header con controles */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-greeting {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .theme-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .theme-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .theme-btn.feminine {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #4a5568;
+        }
+
+        .theme-btn.masculine {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #4a5568;
+        }
+
+        .theme-btn.forest {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            color: #4a5568;
+        }
+
+        .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Calculadora */
+        .calculator-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            min-width: 350px;
+        }
+
+        .display {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4a5568;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1.2rem;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn:active:before {
+            width: 100px;
+            height: 100px;
+        }
+
+        .btn.number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn.operator {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn.function {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn.equals {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Panel de resultados */
+        .results-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            min-width: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .result-item {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .result-operation {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-message {
+            font-size: 1rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Efectos de partículas */
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle 2s ease-out forwards;
+        }
+
+        @keyframes particle {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-100px);
+            }
+        }
+
+        /* Responsive Design */
+        
+        /* Extra Large Screens (1400px+) */
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 1400px;
+                padding: 3rem;
+            }
+            
+            .calculator {
+                min-width: 400px;
+            }
+            
+            .results-panel {
+                min-width: 350px;
+            }
+            
+            .display {
+                font-size: 2.5rem;
+                min-height: 100px;
+            }
+            
+            .btn {
+                padding: 1.5rem;
+                font-size: 1.4rem;
+            }
+        }
+        
+        /* Large Screens (1200px - 1399px) */
+        @media (min-width: 1200px) and (max-width: 1399px) {
+            .container {
+                max-width: 1200px;
+                padding: 2.5rem;
+            }
+            
+            .calculator {
+                min-width: 380px;
+            }
+            
+            .results-panel {
+                min-width: 320px;
+            }
+        }
+        
+        /* Medium Screens (992px - 1199px) */
+        @media (min-width: 992px) and (max-width: 1199px) {
+            .container {
+                max-width: 960px;
+                padding: 2rem;
+            }
+            
+            .calculator {
+                min-width: 350px;
+            }
+            
+            .results-panel {
+                min-width: 300px;
+            }
+            
+            .display {
+                font-size: 1.8rem;
+                min-height: 70px;
+            }
+            
+            .btn {
+                padding: 1rem;
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Small-Medium Screens (768px - 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .calculator-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            
+            .calculator, .results-panel {
+                width: 100%;
+                max-width: 500px;
+                min-width: unset;
+            }
+            
+            .display {
+                font-size: 1.6rem;
+                min-height: 60px;
+                padding: 1rem;
+            }
+            
+            .btn {
+                padding: 0.9rem;
+                font-size: 1rem;
+            }
+            
+            .welcome-card {
+                max-width: 450px;
+                padding: 2.5rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Small Screens (576px - 767px) */
+        @media (min-width: 576px) and (max-width: 767px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .calculator-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .calculator, .results-panel {
+                width: 100%;
+                max-width: 400px;
+                min-width: unset;
+                padding: 1.5rem;
+            }
+            
+            .display {
+                font-size: 1.4rem;
+                min-height: 50px;
+                padding: 1rem;
+            }
+            
+            .btn {
+                padding: 0.8rem;
+                font-size: 0.95rem;
+            }
+            
+            .theme-selector {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .theme-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .user-greeting {
+                font-size: 1.3rem;
+            }
+            
+            .welcome-card {
+                max-width: 350px;
+                padding: 2rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.6rem;
+            }
+            
+            .results-panel {
+                max-height: 300px;
+            }
+        }
+        
+        /* Extra Small Screens (up to 575px) */
+        @media (max-width: 575px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .calculator-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .calculator, .results-panel {
+                width: 100%;
+                max-width: none;
+                min-width: unset;
+                padding: 1rem;
+                margin: 0 0.5rem;
+            }
+            
+            .display {
+                font-size: 1.2rem;
+                min-height: 45px;
+                padding: 0.8rem;
+            }
+            
+            .buttons {
+                gap: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.7rem 0.5rem;
+                font-size: 0.9rem;
+                border-radius: 10px;
+            }
+            
+            .theme-selector {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .theme-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                width: 120px;
+            }
+            
+            .user-greeting {
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .welcome-card {
+                max-width: 300px;
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.4rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .welcome-input {
+                padding: 0.8rem;
+                font-size: 1rem;
+                margin: 0.8rem 0;
+            }
+            
+            .start-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .results-panel {
+                max-height: 250px;
+            }
+            
+            .results-title {
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .result-item {
+                padding: 0.8rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .result-operation {
+                font-size: 1rem;
+            }
+            
+            .result-message {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Ultra Small Screens (up to 320px) */
+        @media (max-width: 320px) {
+            .container {
+                padding: 0.25rem;
+            }
+            
+            .calculator, .results-panel {
+                margin: 0 0.25rem;
+                padding: 0.8rem;
+            }
+            
+            .display {
+                font-size: 1rem;
+                min-height: 40px;
+                padding: 0.6rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 0.3rem;
+                font-size: 0.8rem;
+            }
+            
+            .welcome-card {
+                max-width: 280px;
+                padding: 1rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.2rem;
+            }
+            
+            .theme-btn {
+                width: 100px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Landscape orientation adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .welcome-screen {
+                padding: 1rem;
+            }
+            
+            .welcome-card {
+                padding: 1.5rem;
+                max-width: 350px;
+            }
+            
+            .welcome-title {
+                font-size: 1.3rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .calculator-container {
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+            }
+            
+            .results-panel {
+                max-height: 300px;
+            }
+        }
+        
+        /* High DPI screens */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .btn {
+                border: 0.5px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .display {
+                border-width: 1px;
+            }
+        }
+        
+        /* Accessibility - Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .cloud {
+                animation: none;
+            }
+            
+            .particle, .sparkle {
+                display: none;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .welcome-screen,
+            .cloud,
+            .particle,
+            .sparkle {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+            }
+            
+            .calculator, .results-panel {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+
+        /* Animaciones adicionales */
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="theme-feminine">
+    <!-- Nubes flotantes -->
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+
+    <!-- Pantalla de bienvenida -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-card">
+            <h1 class="welcome-title">✨ Calculadora Mágica Ghibli ✨</h1>
+            <p style="color: #718096; margin-bottom: 1.5rem;">¡Bienvenido a tu calculadora encantada! Por favor, dinos tu nombre para personalizar tu experiencia.</p>
+            <input type="text" class="welcome-input" id="userName" placeholder="Escribe tu nombre aquí..." maxlength="20">
+            <br>
+            <button class="start-btn" onclick="startCalculator()">🌟 Comenzar Aventura 🌟</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="user-greeting" id="userGreeting">¡Hola, Aventurero! 🌸</div>
+            
+            <div class="theme-selector">
+                <button class="theme-btn feminine active" onclick="changeTheme('feminine')">🌸 Femenino</button>
+                <button class="theme-btn masculine" onclick="changeTheme('masculine')">🌿 Masculino</button>
+                <button class="theme-btn forest" onclick="changeTheme('forest')">🍃 Bosque</button>
+            </div>
+        </div>
+
+        <div class="calculator-container">
+            <div class="calculator">
+                <div class="display" id="display">0</div>
+                <div class="buttons">
+                    <button class="btn function" onclick="clearAll()">C</button>
+                    <button class="btn function" onclick="clearEntry()">CE</button>
+                    <button class="btn function" onclick="backspace()">⌫</button>
+                    <button class="btn operator" onclick="inputOperator('/')">÷</button>
+                    
+                    <button class="btn number" onclick="inputNumber('7')">7</button>
+                    <button class="btn number" onclick="inputNumber('8')">8</button>
+                    <button class="btn number" onclick="inputNumber('9')">9</button>
+                    <button class="btn operator" onclick="inputOperator('*')">×</button>
+                    
+                    <button class="btn number" onclick="inputNumber('4')">4</button>
+                    <button class="btn number" onclick="inputNumber('5')">5</button>
+                    <button class="btn number" onclick="inputNumber('6')">6</button>
+                    <button class="btn operator" onclick="inputOperator('-')">-</button>
+                    
+                    <button class="btn number" onclick="inputNumber('1')">1</button>
+                    <button class="btn number" onclick="inputNumber('2')">2</button>
+                    <button class="btn number" onclick="inputNumber('3')">3</button>
+                    <button class="btn operator" onclick="inputOperator('+')">+</button>
+                    
+                    <button class="btn function" onclick="inputOperator('sqrt')">√</button>
+                    <button class="btn number" onclick="inputNumber('0')">0</button>
+                    <button class="btn function" onclick="inputNumber('.')">.</button>
+                    <button class="btn equals" onclick="calculate()">=</button>
+                    
+                    <button class="btn function" onclick="inputOperator('pow')">x²</button>
+                    <button class="btn function" onclick="inputOperator('%')">%</button>
+                    <button class="btn function" onclick="inputOperator('sin')">sin</button>
+                    <button class="btn function" onclick="inputOperator('cos')">cos</button>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <h3 class="results-title">🌟 Historial Mágico 🌟</h3>
+                <div id="resultsHistory"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let operator = null;
+        let previousInput = null;
+        let shouldResetDisplay = false;
+        let userName = '';
+        let currentTheme = 'feminine';
+
+        function startCalculator() {
+            const nameInput = document.getElementById('userName');
+            userName = nameInput.value.trim() || 'Aventurero';
+            
+            document.getElementById('userGreeting').textContent = `¡Hola, ${userName}! 🌸`;
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            
+            // Efecto de partículas al iniciar
+            createParticles(10);
+        }
+
+        function changeTheme(theme) {
+            currentTheme = theme;
+            document.body.className = `theme-${theme}`;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.theme-btn.${theme}`).classList.add('active');
+            
+            // Actualizar saludo según el tema
+            const greetings = {
+                feminine: `¡Hola, ${userName}! 🌸`,
+                masculine: `¡Hola, ${userName}! 🌿`,
+                forest: `¡Hola, ${userName}! 🍃`
+            };
+            
+            document.getElementById('userGreeting').textContent = greetings[theme];
+            
+            // Efecto visual
+            createSparkles();
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').textContent = currentInput;
+        }
+
+        function inputNumber(num) {
+            if (shouldResetDisplay) {
+                currentInput = '0';
+                shouldResetDisplay = false;
+            }
+            
+            if (currentInput === '0' && num !== '.') {
+                currentInput = num;
+            } else {
+                currentInput += num;
+            }
+            
+            updateDisplay();
+            createParticles(3);
+        }
+
+        function inputOperator(op) {
+            if (operator !== null && !shouldResetDisplay) {
+                calculate();
+            }
+            
+            previousInput = currentInput;
+            operator = op;
+            shouldResetDisplay = true;
+            
+            // Operaciones especiales
+            if (op === 'sqrt') {
+                const result = Math.sqrt(parseFloat(currentInput));
+                addToHistory(`√${currentInput}`, result);
+                currentInput = result.toString();
+                operator = null;
+                previousInput = null;
+                updateDisplay();
+                return;
+            }
+            
+            if (op === 'pow') {
+                const result = Math.pow(parseFloat(currentInput), 2);
+                addToHistory(`${currentInput}²`, result);
+                currentInput = result.toString();
+                operator = null;
+                previousInput = null;
+                updateDisplay();
+                return;
+            }
+            
+            if (op === 'sin') {
+                const result = Math.sin(parseFloat(currentInput) * Math.PI / 180);
+                addToHistory(`sin(${currentInput}°)`, result);
+                currentInput = result.toString();
+                operator = null;
+                previousInput = null;
+                updateDisplay();
+                return;
+            }
+            
+            if (op === 'cos') {
+                const result = Math.cos(parseFloat(currentInput) * Math.PI / 180);
+                addToHistory(`cos(${currentInput}°)`, result);
+                currentInput = result.toString();
+                operator = null;
+                previousInput = null;
+                updateDisplay();
+                return;
+            }
+        }
+
+        function calculate() {
+            if (operator === null || previousInput === null) return;
+            
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            let result;
+            let operationSymbol;
+            
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    operationSymbol = '+';
+                    break;
+                case '-':
+                    result = prev - current;
+                    operationSymbol = '-';
+                    break;
+                case '*':
+                    result = prev * current;
+                    operationSymbol = '×';
+                    break;
+                case '/':
+                    if (current === 0) {
+                        alert('¡No se puede dividir por cero! 🙈');
+                        return;
+                    }
+                    result = prev / current;
+                    operationSymbol = '÷';
+                    break;
+                case '%':
+                    result = prev % current;
+                    operationSymbol = '%';
+                    break;
+                default:
+                    return;
+            }
+            
+            addToHistory(`${previousInput} ${operationSymbol} ${currentInput}`, result);
+            
+            currentInput = result.toString();
+            operator = null;
+            previousInput = null;
+            shouldResetDisplay = true;
+            updateDisplay();
+            
+            // Efecto especial para el resultado
+            createParticles(8);
+            createSparkles();
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            operator = null;
+            previousInput = null;
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        function clearEntry() {
+            currentInput = '0';
+            updateDisplay();
+        }
+
+        function backspace() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+
+        function addToHistory(operation, result) {
+            const historyDiv = document.getElementById('resultsHistory');
+            const resultItem = document.createElement('div');
+            resultItem.className = 'result-item';
+            
+            const messages = [
+                `¡Este es el resultado, ${userName}! ✨`,
+                `¡Aquí tienes tu respuesta, ${userName}! 🌟`,
+                `¡Resultado mágico para ${userName}! 🎭`,
+                `¡${userName}, tu cálculo está listo! 🌸`,
+                `¡Perfecto, ${userName}! Aquí está: 🍃`
+            ];
+            
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            
+            resultItem.innerHTML = `
+                <div class="result-operation">${operation} = ${result}</div>
+                <div class="result-message">${randomMessage}</div>
+            `;
+            
+            historyDiv.insertBefore(resultItem, historyDiv.firstChild);
+            
+            // Limitar historial a 10 elementos
+            while (historyDiv.children.length > 10) {
+                historyDiv.removeChild(historyDiv.lastChild);
+            }
+        }
+
+        function createParticles(count) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.top = Math.random() * window.innerHeight + 'px';
+                particle.style.background = getRandomColor();
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 2000);
+            }
+        }
+
+        function createSparkles() {
+            for (let i = 0; i < 5; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * window.innerWidth + 'px';
+                sparkle.style.top = Math.random() * window.innerHeight + 'px';
+                sparkle.style.animationDelay = Math.random() * 1 + 's';
+                
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 3000);
+            }
+        }
+
+        function getRandomColor() {
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Efectos de teclado
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            
+            if (key >= '0' && key <= '9') {
+                inputNumber(key);
+            } else if (key === '.') {
+                inputNumber('.');
+            } else if (key === '+') {
+                inputOperator('+');
+            } else if (key === '-') {
+                inputOperator('-');
+            } else if (key === '*') {
+                inputOperator('*');
+            } else if (key === '/') {
+                event.preventDefault();
+                inputOperator('/');
+            } else if (key === 'Enter' || key === '=') {
+                event.preventDefault();
+                calculate();
+            } else if (key === 'Escape') {
+                clearAll();
+            } else if (key === 'Backspace') {
+                backspace();
+            }
+        });
+
+        // Inicializar display
+        updateDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96783ae5e359e564',t:'MTc1MzkxMzg4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
